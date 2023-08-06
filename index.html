@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPT4 Chta API Model</title>
+</head>
+<body>
+    <main>
+    <h1>ChatGPT4 API in Action</h1>
+    <form action="">
+        <input type="text" name="message" id="message">
+        <button type="submit">Send</button>
+    </form>
+    <div id="chat-log"></div>
+    </main>
+    <script>
+        let messages = [ ]
+        const chatlog = document.getElementById('chat-log');
+        const message = document.getElementById('message');
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => { 
+             e.preventDefault(); // this dosent reload the page 
+             const messageText = message.value; //storing text message from the input 
+             const newMessage = {"role": "user", "content": `${messageText}`}
+             messages.push(newMessage)
+             message.value = ''; // setting the input value to empty so it likes it got submitted
+             const messageElement = document.createElement('div'); // creating new div
+             messageElement.classList.add('message'); // giving class value for the newlycreated div
+             messageElement.classList.add('message--sent');// giving class value for the newlycreated div
+             messageElement.innerHTML = `
+             <div class="message__text">${messageText}</div> `;//inner HTML of that div 
+             chatLog.appendChild(messageElement); // appending the div into chatLog
+             chatLog.scrollTop = chatLog.scrollHeight;
+             // fetch request to the server  
+             fetch('https://testgpt.azurewebsites.net/api/gptfunction?',{
+                method:'POST',
+                headers:{
+                    'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: messageText
+                    })
+             })  
+             .then(res => res.json())
+             .then((data)=> {
+                let newAssistantMessage = {"role": "assistant", "content": `${data.completion.content}`}
+                messages.push(newAssistantMessage)
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.classList.add('message--received');
+                messageElement.innerHTML = `
+                <div class= 'message__text'>${data.completion.content}</div>`;
+                chatLog.appendChild(messageElement);
+                chatLog.scrollTop = chatLog.scrollHeight;
+
+        }
+        )
+        })
+    </script>
+</body>
+</html>
+
